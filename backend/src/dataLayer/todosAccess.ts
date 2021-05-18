@@ -12,6 +12,9 @@ export class TodoAccess {
 	constructor(
 		private readonly docClient: DocumentClient = createDynamoDBClient(),
 		private readonly todosTable = process.env.TODOS_TABLE,
+		private readonly s3 = new AWS.S3({ signatureVersion: 'v4' }),
+		private readonly s3Bucket = process.env.TODOS_IMAGES_S3_BUCKET,
+		private readonly urlExpiration = process.env.TODOS_SIGNED_URL_EXPIRATION
 	) {}
 
 	async getTodos(userId: string): Promise<TodoItem[]> {
@@ -113,6 +116,49 @@ export class TodoAccess {
 				})
 				.promise()
 		}
+
+		return result
+	}
+
+	async deleteTodo(userId: string, todoId: string) {
+		let result = {
+			statusCode: 200,
+			body: ''
+		}
+
+		let todoToBeDeleted = await this.docClient
+			.query({
+				TableName: this.todosTable,
+				KeyConditionExpression: 'userId = :userId AND todoId = :todoId',
+				ExpressionAttributeValues: {
+					':userId': userId,
+					':todoId': todoId
+				}
+			})
+			.promise()
+
+		if (todoToBeDeleted.Items.length === 0) {
+			result.statusCode = 404
+			result.body = 'No todo item to be deleted'
+			return result
+		}
+
+		await this.docClient
+			.delete({
+				TableName: this.todosTable,
+				Key: {
+					userId,
+					todoId
+				}
+			})
+			.promise()
+
+		await this.s3
+			.deleteObject({
+				Bucket: this.s3Bucket,
+				Key: todoId
+			})
+			.promise()
 
 		return result
 	}

@@ -51,3 +51,10 @@ export async function updateTodo(
 
 	return result
 }
+
+export async function deleteTodo(jwtToken: string, todoId: string) {
+	const userId = parseUserId(jwtToken)
+	const toReturn = todoAccess.deleteTodo(userId, todoId)
+
+	return toReturn
+}
