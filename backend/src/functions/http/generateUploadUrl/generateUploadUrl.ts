@@ -1,25 +1,27 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
+import { generateUploadUrl } from '@businessLogic/todos'
+import { createLogger } from '@utils/logger'
+import { getToken } from '@functions/utils'
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
-import { createLogger } from '@utils/logger'
-import { getTodos } from '@businessLogic/todos'
-import { getToken } from '@functions/utils'
 
-const logger = createLogger('getTodos')
+const logger = createLogger('generateUploadUrls')
 
 export const handler = middy(
 	async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-		logger.info('Processing getTodos Event: ', {
+		logger.info('Generating upload url: ', {
 			event
 		})
 
+		const todoId = event.pathParameters.todoId
 		const jwtToken = getToken(event)
-		const items = await getTodos(jwtToken)
+		const result = await generateUploadUrl(jwtToken, todoId)
+
 
 		return {
-			statusCode: 200,
+			statusCode: result.statusCode,
 			body: JSON.stringify({
-				items
+				uploadUrl: result.body
 			})
 		}
 	}
@@ -28,6 +30,6 @@ export const handler = middy(
 handler.use(
 	cors({
 		credentials: true,
-		origin: '*'
+    origin: '*'
 	})
 )

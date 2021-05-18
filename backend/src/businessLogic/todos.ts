@@ -58,3 +58,10 @@ export async function deleteTodo(jwtToken: string, todoId: string) {
 
 	return toReturn
 }
+
+export async function generateUploadUrl(jwtToken: string, todoId: string) {
+	const userId = parseUserId(jwtToken)
+	const result = todoAccess.generateUploadUrl(userId, todoId)
+
+	return result
+}

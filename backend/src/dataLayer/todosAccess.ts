@@ -162,6 +162,56 @@ export class TodoAccess {
 
 		return result
 	}
+
+	async generateUploadUrl(userId, todoId) {
+		let result = {
+			statusCode: 201,
+			body: ''
+		}
+
+		let checkIfExist = await this.docClient
+			.query({
+				TableName: this.todosTable,
+				KeyConditionExpression: 'userId = :userId AND todoId = :todoId',
+				ExpressionAttributeValues: {
+					':userId': userId,
+					':todoId': todoId
+				}
+			})
+			.promise()
+
+		if (checkIfExist.Items.length === 0) {
+			result = {
+				statusCode: 404,
+				body: 'No item found to update'
+			}
+			return result
+		}
+
+		await this.docClient
+			.update({
+				TableName: this.todosTable,
+				Key: {
+					userId,
+					todoId
+				},
+				UpdateExpression: 'set #attachmentUrl =:attachmentUrl',
+				ExpressionAttributeValues: {
+					':attachmentUrl': `https://${this.s3Bucket}.s3.amazonaws.com/${todoId}`
+				},
+				ExpressionAttributeNames: { '#attachmentUrl': 'attachmentUrl' },
+				ReturnValues: 'UPDATED_NEW'
+			})
+			.promise()
+
+		result.body = this.s3.getSignedUrl('putObject', {
+			Bucket: this.s3Bucket,
+			Key: todoId,
+			Expires: parseInt(this.urlExpiration)
+		})
+
+		return result
+	}
 }
 
 function createDynamoDBClient(): AWS.DynamoDB.DocumentClient {

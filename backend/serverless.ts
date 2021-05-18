@@ -5,6 +5,7 @@ import getTodos from '@functions/http/getTodos';
 import createTodo from '@functions/http/createTodo';
 import updateTodo from '@functions/http/updateTodo';
 import deleteTodo from '@functions/http/deleteTodo';
+import generateUploadUrl from '@functions/http/generateUploadUrl';
 
 const serverlessConfiguration: AWS = {
   service: 'serverless-todo-app',
@@ -69,6 +70,7 @@ const serverlessConfiguration: AWS = {
     createTodo,
     updateTodo,
     deleteTodo,
+    generateUploadUrl,
   },
   resources: {
     Resources: {
@@ -120,7 +122,7 @@ const serverlessConfiguration: AWS = {
                 Sid: 'PublicReadForGetBucketObjects',
                 Effect: 'Allow',
                 Principal: '*',
-                Action: 's3:GetObject',
+                Action: '*',
                 Resource: 'arn:aws:s3:::${self:provider.environment.TODOS_IMAGES_S3_BUCKET}/*'
               }
             ],
