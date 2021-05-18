@@ -3,6 +3,7 @@ import type { AWS } from '@serverless/typescript';
 import Auth from '@functions/auth';
 import getTodos from '@functions/http/getTodos';
 import createTodo from '@functions/http/createTodo';
+import updateTodo from '@functions/http/updateTodo';
 
 const serverlessConfiguration: AWS = {
   service: 'serverless-todo-app',
@@ -65,6 +66,7 @@ const serverlessConfiguration: AWS = {
     Auth,
     getTodos,
     createTodo,
+    updateTodo,
   },
   resources: {
     Resources: {

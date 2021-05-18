@@ -4,6 +4,7 @@ import { TodoAccess } from '@dataLayer/todosAccess'
 import { parseUserId } from '@auth/utils'
 import { CreateTodoRequest } from '@requests/CreateTodoRequest'
 import { createLogger } from '@utils/logger'
+import { UpdateTodoRequest } from '@requests/UpdateTodoRequest'
 
 const logger = createLogger('todos')
 
@@ -38,4 +39,15 @@ export async function createTodo(
 	const toReturn = todoAccess.createTodo(item)
 
 	return toReturn
+}
+
+export async function updateTodo(
+	jwtToken: string,
+	todoId: string,
+	parsedBody: UpdateTodoRequest
+) {
+	const userId = parseUserId(jwtToken)
+	const result = todoAccess.updateTodo(userId, todoId, parsedBody)
+
+	return result
 }
